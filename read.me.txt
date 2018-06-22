@@ -1,0 +1,52 @@
+2018.06.21
+
+with the outcross design involving two F1s (F1.10 and F1.3) that were crossed to generate the F2 generation, the two different F1 chromosomes inherited by each F2 were genotyped independently in bins of varying size (500,000 kb for recombining regions or 1 Mb for non-recombining regions, depending on previous recombination estimates from JGI) using SNPs whose ancestry could be traced back to one of the four cross parents
+
+there are three different genotype files: one for the F2 genotypes for the chromosome inherited from F1.3 parent (F1.3.csv), one for the F2 genotypes for the chromosome inherited from the F1.10 parent (F1.10.csv), and one for the combined genotypes ("table.merge.csv")
+
+for each F1 chromosome in the F2s, AA indicates A. formosa ancestry, and AB indicates A. pubescens ancestry, and "-" means that a genotype could not be assigned for that bin, either because a crossing over event took place in that bin or because read coverage is too low for the bin to confidently assign ancestry
+
+for the merged file, here is how the genotypes were scored:
+
+A = homozygous A. formosa ancestry (AA/AA)
+B = homozygous A. pubescens ancestry (AB/AB)
+H = heterozygous for A. formosa and A. pubescens ancestry (AA/AB or AB/AA)
+C = "-" not homozygous A. formosa, either AB/- or -/AB
+D = "-" in homozygous for A. pubescens, either AA/- or -/AA
+
+the general code for conducting the genetic mapping is in the script generate.genetic.map.R
+
+as the initial genetic maps did not fully concur with the reference genome physical map, several rounds of genetic map making and bin adjustments were conducted using R/qtl
+
+in regions where there was discordance between the genetic and physical map or where genotypes could not be called well across a 500,000 kb bin because parts of that bin were not in the correct order, genotypes were called on smaller bins of 100,000 kb to allow them to move to their position as estimated by the genetic map
+
+after successive rounds of genetic mapping and cross referencing with the physical map and inspecting genotype calls and genetic map order, a final marker order was decided upon - that is the order found in the files F1.3.csv, F1.10.csv, and table.merge.csv
+
+recombination frequency between the markers without changing marker order was estimated in Rqtl (end of generate.genetic.map.R script)
+
+the script "estimate.recomb.rate.script.R" was used to estimate the recombination rate per bin - i wrote this script rather than just using the cM spacing between markers as calculated by R/qtl in order to try to estimate the recombination rate at the ends of chromosomes - the rates from both calculations match pretty well
+
+
+"estimate.recomb.rate.script.R" takes 3 input files
+
+F1.10.csv
+F1.3.csv
+recombination.brackets.txt
+
+the file "recombination.brackets.txt" contains information about the genotype bins with the following columns:
+
+chr			the genetic map chromosome for the marker
+cM			genetic map position/distance on chromosome as calculated using R/qtl
+mk			the marker name
+mk.chr		the physical map chromosome for the marker
+start		the start position of the physical map bin
+stop		the end position of the physical map bin
+
+some small regions of the genome are not covered by this final recombination rate estimate
+
+notably chr07 
+
+7	13100000	13150001	
+7	10000000	10200001
+
+this could be modified slightly by hand if it matters
